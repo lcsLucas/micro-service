@@ -1,4 +1,4 @@
-module github.com/lcslucas/lojavirtual
+module github.com/lcslucas/micro-service
 
 go 1.15
 
