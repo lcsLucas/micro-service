@@ -1,7 +1,8 @@
 # micro-service Golang
 Estrutura simples de micro serviço em Golang
 
-## Importar o banco, executando o script na pasta "sql"
+# Importar o banco
+    * Executar o script na pasta "sql"
 
 ## executar o serviço de usuário:
     * "cmd cmd/usuarios"
