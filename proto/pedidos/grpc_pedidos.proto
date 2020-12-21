@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package proto;
+
+// comando para generar o código em GO: protoc --go_out=plugins=grpc:. proto/pedidos/grpc_pedidos.proto
+
+service ServiceGetProduto {
+    rpc GetProduto (GetProdutoRequest) returns (GetProdutoResponse);
+}
+
+message GetProdutoRequest {
+    int64 id = 1;
+}
+
+message Usuario {
+    int64 id = 1;
+    string nome = 2;
+    string email = 3;
+    string err = 4;
+}
+
+message Itens {
+    int64 id = 1;
+    string descricao = 2;
+    float preco = 3;
+    uint32 qtde = 4;
+}
+
+message Pedido {
+    int64 id = 1;
+    string data = 2;
+    float valor = 3;
+    string pagamento = 4;
+    Usuario usuario = 5;
+    repeated Itens itens = 6;
+}
+
+message GetProdutoResponse {
+    Pedido pedido = 1;
+    string err = 2;
+}

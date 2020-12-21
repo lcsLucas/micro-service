@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package proto;
+
+// comando para generar o código em GO: protoc --go_out=plugins=grpc:. proto/usuarios/grpc_usuarios.proto
+
+service ServiceGetUser {
+    rpc GetUser (GetUserRequest) returns (GetUserResponse) {}
+}
+
+message GetUserRequest {
+    int64 id = 1;
+}
+
+message User {
+    int64 id = 1;
+    string nome = 2;
+    string email = 3;
+}
+
+message GetUserResponse {
+    User usuario = 1;
+    string Err = 2;
+}
