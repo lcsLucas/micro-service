@@ -3,9 +3,9 @@ package usuarios
 import "context"
 
 type Usuario struct {
-	ID    int    `json:"id, omitempty"`
-	Nome  string `json:"nome"`
-	Email string `json:"email`
+	ID    int    `gorm:"primary_key;auto_increment" json:"id"`
+	Nome  string `gorm:"size:255; not null" json:"nome"`
+	Email string `gorm:"size:255; not null" json:"email`
 	Err   string `json:"err,omitempty"`
 }
 

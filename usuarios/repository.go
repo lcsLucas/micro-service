@@ -2,17 +2,18 @@ package usuarios
 
 import (
 	"context"
-	"database/sql"
+	"errors"
 
 	"github.com/go-kit/kit/log"
+	"gorm.io/gorm"
 )
 
 type repository struct {
-	db     *sql.DB
+	db     *gorm.DB
 	logger log.Logger
 }
 
-func NewRepository(db *sql.DB, logger log.Logger) Repository {
+func NewRepository(db *gorm.DB, logger log.Logger) Repository {
 	return &repository{
 		db:     db,
 		logger: log.With(logger, "repository", "sql"),
@@ -20,17 +21,17 @@ func NewRepository(db *sql.DB, logger log.Logger) Repository {
 }
 
 func (r *repository) Get(ctx context.Context, id int) (Usuario, error) {
-	var rid int
-	var nome, email string
+	u := Usuario{}
+	err := r.db.Debug().WithContext(ctx).Model(Usuario{}).Where("id=?", id).Take(&u).Error
 
-	err := r.db.QueryRow("SELECT * FROM usuarios WHERE id=? LIMIT 1", id).Scan(&rid, &nome, &email)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return Usuario{}, errors.New("Usuário não encontrado")
+		}
+
 		return Usuario{}, err
 	}
 
-	return Usuario{
-		ID:    rid,
-		Nome:  nome,
-		Email: email,
-	}, nil
+	return u, nil
+
 }

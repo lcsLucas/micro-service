@@ -1,0 +1,28 @@
+FROM golang:latest
+
+# Diretório de trabalho
+WORKDIR /app/src/api
+
+#aponta a váriavel GOPATH para o diretório app
+ENV GOPATH=/app
+
+# copia os arquivos de usuários do projeto para o workdir do container
+
+#RUN go get github.com/joho/godotenv
+#RUN go get github.com/gorilla/mux
+#RUN go get google.golang.org/grpc
+
+COPY /api /app/src/api
+COPY /proto/pedidos /app/src/api/proto/pedidos
+COPY /.env /app/src/api
+COPY /main.go /app/src/api
+COPY /go.mod /app/src/api
+#COPY /go.sum /app/src/api
+
+RUN export GO111MODULE=on
+RUN cd /app/src/api && go build
+
+# expo~e a porta 8080
+EXPOSE 8080
+
+ENTRYPOINT [ "/app/src/api/main" ]

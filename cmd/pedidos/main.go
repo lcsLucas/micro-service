@@ -13,8 +13,8 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/lcslucas/lojavirtual/pedidos"
-	proto "github.com/lcslucas/lojavirtual/proto/pedidos"
+	"github.com/lcslucas/micro-service/pedidos"
+	proto "github.com/lcslucas/micro-service/proto/pedidos"
 
 	"google.golang.org/grpc"
 )

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	proto_usu "github.com/lcslucas/lojavirtual/proto/usuarios"
-	"github.com/lcslucas/lojavirtual/usuarios"
+	proto_usu "github.com/lcslucas/micro-service/proto/usuarios"
+	"github.com/lcslucas/micro-service/usuarios"
 
 	logkit "github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"

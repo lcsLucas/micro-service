@@ -19,11 +19,11 @@ func (s service) Get(ctx context.Context, id int) (Usuario, error) {
 	u, err := s.repository.Get(ctx, id)
 
 	if err != nil {
-		level.Error(logger).Log("error", err)
+		level.Error(logger).Log("[error]", err)
 		return Usuario{}, err
 	}
 
-	logger.Log("Get user", id)
+	level.Info(logger).Log("User[id]=", id)
 	return u, nil
 }
 

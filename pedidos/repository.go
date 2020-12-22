@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/go-kit/kit/log"
-	"github.com/lcslucas/lojavirtual/usuarios"
+	"github.com/lcslucas/micro-service/usuarios"
 )
 
 type repository struct {

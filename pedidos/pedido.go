@@ -3,7 +3,7 @@ package pedidos
 import (
 	"context"
 
-	"github.com/lcslucas/lojavirtual/usuarios"
+	"github.com/lcslucas/micro-service/usuarios"
 )
 
 type Itens struct {
