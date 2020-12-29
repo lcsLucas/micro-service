@@ -34,7 +34,7 @@ func PedidoHandler(w http.ResponseWriter, r *http.Request) {
 
 	/**/
 
-	portGrpcPedidos := fmt.Sprintf(":%s", os.Getenv("PED_GRPC_PORT"))
+	portGrpcPedidos := fmt.Sprintf("%s:%s", os.Getenv("PED_GRPC_HOST"), os.Getenv("PED_GRPC_PORT"))
 
 	var conn *grpc.ClientConn
 	conn, err = grpc.Dial(portGrpcPedidos, grpc.WithInsecure())

@@ -1,28 +1,32 @@
-FROM golang:latest
+# Instruções de como criar a imagem e o container
+# docker build -t micro_api -f Dockerfile.api .
+# docker container run -i --name micro-api --net net-micro -p 9000:9000 micro_api go run main.go
+FROM golang:1.15
+
+ADD /api /go/src/github.com/lcslucas/micro-service/api
+ADD /proto/pedidos /go/src/github.com/lcslucas/micro-service/proto/pedidos
+ADD /proto/usuarios /go/src/github.com/lcslucas/micro-service/proto/usuarios
+ADD /.env /go/src/github.com/lcslucas/micro-service
+ADD /main.go /go/src/github.com/lcslucas/micro-service
+ADD /go.mod /go/src/github.com/lcslucas/micro-service
 
 # Diretório de trabalho
-WORKDIR /app/src/api
+#WORKDIR /app/src/api
+WORKDIR /go/src/github.com/lcslucas/micro-service
 
 #aponta a váriavel GOPATH para o diretório app
-ENV GOPATH=/app
+#ENV GOPATH=/app
 
 # copia os arquivos de usuários do projeto para o workdir do container
 
 #RUN go get github.com/joho/godotenv
 #RUN go get github.com/gorilla/mux
-#RUN go get google.golang.org/grpc
-
-COPY /api /app/src/api
-COPY /proto/pedidos /app/src/api/proto/pedidos
-COPY /.env /app/src/api
-COPY /main.go /app/src/api
-COPY /go.mod /app/src/api
-#COPY /go.sum /app/src/api
+#RUN go get github.com/lcslucas/micro-service
 
 RUN export GO111MODULE=on
-RUN cd /app/src/api && go build
+#RUN cd /go/src/github.com/lcslucas/micro-service
 
-# expo~e a porta 8080
-EXPOSE 8080
+# expõe a porta 9000
+EXPOSE 9000
 
-ENTRYPOINT [ "/app/src/api/main" ]
+#ENTRYPOINT [ "go run main" ]

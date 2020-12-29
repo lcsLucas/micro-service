@@ -1,20 +1,88 @@
+# docker-compose up -> cria os container e dá o start neles
+# docker-compose down --rmi 'all' -> para todos os containers que estão em execução e remove eles e suas imagens
+
 version: '3.3'
 services:
   db:
-    container_name: pedidos_db
+    container_name: micro-db
     image: mysql:5.7
     restart: always
+    networks: 
+      - net-micro
     environment:
       - MYSQL_DATABASE=pedidos
       - MYSQL_ROOT_PASSWORD=@root
       - MYSQL_USER=mysql
       - MYSQL_PASSWORD=@root
-      - DATABASE_HOST=db
+      - DATABASE_HOST=localhost
       - LC_ALL=C.UTF-8
       - LANG=C.UTF-8
     ports:
       # <Port exposed> : < MySQL Port running inside container>
-      - '3307:3306'
+      - '3306:3306'
     volumes:
-      - ./data:/var/lib/mysql
+      - ./mysqldata:/var/lib/mysql
       - ./sql:/docker-entrypoint-initdb.d
+  api:
+    stdin_open: true
+    tty: true
+    build: 
+      context: .
+      dockerfile: "Dockerfile.api"
+    container_name: micro-api
+    restart: always
+    working_dir: /go/src/github.com/lcslucas/micro-service
+    command: go run main.go
+    depends_on:
+      - db
+    ports:
+      - '9000:9000'
+    links:
+      - db
+    networks: 
+      - net-micro
+  usuarios:
+    container_name: micro-usuarios
+    stdin_open: true
+    tty: true
+    build: 
+      context: .
+      dockerfile: "Dockerfile.usuarios"
+    restart: always
+    working_dir: /go/src/github.com/lcslucas/micro-service/cmd/usuarios
+    command: go run main.go
+    depends_on:
+      - db
+      - api
+    ports:
+      - '8081:8081'
+    links:
+      - db
+      - api
+    networks: 
+      - net-micro
+  pedidos:
+    container_name: micro-pedidos
+    stdin_open: true
+    tty: true
+    build: 
+      context: .
+      dockerfile: "Dockerfile.pedidos"
+    restart: always
+    working_dir: /go/src/github.com/lcslucas/micro-service/cmd/pedidos
+    command: go run main.go
+    depends_on:
+      - db
+      - api
+      - usuarios
+    ports:
+      - '8082:8082'
+    links:
+      - db
+      - api
+      - usuarios
+    networks: 
+      - net-micro
+networks:
+  net-micro:
+    external: true

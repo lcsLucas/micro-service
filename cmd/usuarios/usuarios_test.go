@@ -32,8 +32,6 @@ func TestService(t *testing.T) {
 
 	if response.Err != "" {
 		t.Fatalf("Erro recebido do servidor: %s", response.Err)
-	} else {
-		t.Log(response)
 	}
 
 }

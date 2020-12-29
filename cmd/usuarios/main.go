@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	"github.com/go-kit/kit/log"
@@ -23,27 +24,24 @@ import (
 )
 
 var conn *gorm.DB
+var configDB config.ConfigDB
+
+var logger log.Logger
+
+var host_grpc_usu string
+var port_grpc_usu int
 
 type ServerGRPC struct{}
 
 func (s *ServerGRPC) GetUser(ctx context.Context, req *proto.GetUserRequest) (*proto.GetUserResponse, error) {
-
-	var logger log.Logger
-	{
-		logger = log.NewLogfmtLogger(os.Stderr)
-		logger = log.NewSyncLogger(logger)
-		logger = log.With(logger,
-			"service", "users",
-			"hour", log.DefaultTimestampUTC,
-			"caller", log.DefaultCaller,
-		)
-	}
-
 	var srv usuarios.Service
 	{
 		repository := usuarios.NewRepository(conn, logger)
 		srv = usuarios.NewService(repository, logger)
 	}
+
+	fmt.Println("--- Content request ---")
+	fmt.Println(req)
 
 	u, err := srv.Get(ctx, int(req.Id))
 	if err != nil {
@@ -66,21 +64,7 @@ func (s *ServerGRPC) GetUser(ctx context.Context, req *proto.GetUserRequest) (*p
 }
 
 func inicializeDB() error {
-	err := godotenv.Load("../../.env")
-
-	if err != nil {
-		return err
-	}
-
-	c := config.ConfigDB{
-		Host:     os.Getenv("USU_DB_HOST"),
-		User:     os.Getenv("USU_DB_USER"),
-		Password: os.Getenv("USU_DB_PASSWORD"),
-		Port:     os.Getenv("USU_DB_PORT"),
-		DBName:   os.Getenv("USU_DB_NAME"),
-	}
-
-	newConn, err := database.Connect(c)
+	newConn, err := database.Connect(configDB)
 	if err != nil {
 		return err
 	}
@@ -90,37 +74,58 @@ func inicializeDB() error {
 	return migrations.ExecMigrationUsuarios(conn)
 }
 
+func inicializeLogger() {
+	logger = log.NewLogfmtLogger(os.Stderr)
+	logger = log.NewSyncLogger(logger)
+	logger = log.With(logger,
+		"service", "users",
+		"hour", log.DefaultTimestampUTC,
+		"caller", log.DefaultCaller,
+	)
+}
+
+func inicializeVars() error {
+	err := godotenv.Load("../../.env")
+
+	if err != nil {
+		return err
+	}
+
+	configDB = config.ConfigDB{
+		Host:     os.Getenv("USU_DB_HOST"),
+		User:     os.Getenv("USU_DB_USER"),
+		Password: os.Getenv("USU_DB_PASSWORD"),
+		Port:     os.Getenv("USU_DB_PORT"),
+		DBName:   os.Getenv("USU_DB_NAME"),
+	}
+
+	host_grpc_usu = os.Getenv("USU_GRPC_HOST")
+	port_grpc_usu, _ = strconv.Atoi(os.Getenv("USU_GRPC_PORT"))
+
+	return nil
+}
+
 func main() {
+	var err error
 
 	/* Iniciando Logger */
-	var logger log.Logger
-	{
-		logger = log.NewLogfmtLogger(os.Stderr)
-		logger = log.NewSyncLogger(logger)
-		logger = log.With(logger,
-			"service", "users",
-			"hour", log.DefaultTimestampUTC,
-			"caller", log.DefaultCaller,
-		)
-	}
+	inicializeLogger()
 
 	level.Info(logger).Log("msg", "service started")
 	defer level.Info(logger).Log("msg", "service ended")
 
 	flag.Parse()
-
 	/* Iniciando Logger */
 
-	errs := make(chan error)
-
-	go func() {
-		c := make(chan os.Signal, 1)
-		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
-		errs <- fmt.Errorf("%s", <-c)
-	}()
+	/* Inicializando variáveis */
+	err = inicializeVars()
+	if err != nil {
+		level.Error(logger).Log("exit", err)
+	}
+	/* Inicializando variáveis */
 
 	/* Iniciando conexão com o banco*/
-	err := inicializeDB()
+	err = inicializeDB()
 	if err != nil {
 		level.Error(logger).Log("exit", err)
 	}
@@ -130,7 +135,7 @@ func main() {
 	/*Iniciando conexão com o banco*/
 
 	/*Iniciando conexão GRPC com o serviço de usuário*/
-	grpcListener, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", 8081))
+	grpcListener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", host_grpc_usu, port_grpc_usu))
 	if err != nil {
 		logger.Log("transport", "gRPC", "during", "Listen", "err", err)
 	}
@@ -141,10 +146,19 @@ func main() {
 		grpcServer := grpc.NewServer()
 		proto.RegisterServiceGetUserServer(grpcServer, &s)
 		if err := grpcServer.Serve(grpcListener); err != nil {
-			logger.Log("transport", "gRPC", "during", "Listen", "err", "Fatal to serve gRPC server port 8081")
+			logger.Log("transport", "gRPC", "during", "listen", "err", "Fatal to serve:", host_grpc_usu, port_grpc_usu, ":", err)
 		}
 	}()
 	/*Iniciando conexão GRPC com o serviço de usuário*/
+
+	errs := make(chan error)
+
+	// notifica o programa quando ele é encerrado
+	go func() {
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+		errs <- fmt.Errorf("%s", <-c)
+	}()
 
 	level.Error(logger).Log("exit", <-errs)
 }

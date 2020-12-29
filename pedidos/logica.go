@@ -3,8 +3,9 @@ package pedidos
 import (
 	"context"
 	"fmt"
-	"log"
+	"os"
 
+	"github.com/joho/godotenv"
 	proto_usu "github.com/lcslucas/micro-service/proto/usuarios"
 	"github.com/lcslucas/micro-service/usuarios"
 
@@ -22,6 +23,12 @@ type service struct {
 func (s service) Get(ctx context.Context, id int64) (Pedido, error) {
 	logger := logkit.With(s.logger, "method", "Get")
 
+	err := godotenv.Load("../../.env")
+
+	if err != nil {
+		return Pedido{}, err
+	}
+
 	p, err := s.repository.Get(ctx, id)
 	if err != nil {
 		level.Error(logger).Log("error", err)
@@ -31,9 +38,11 @@ func (s service) Get(ctx context.Context, id int64) (Pedido, error) {
 	/*Recupera as informações do usuario do pedido*/
 	var conn *grpc.ClientConn
 
-	conn, err = grpc.Dial(":8081", grpc.WithInsecure())
+	portGrpcUsuarios := fmt.Sprintf("%s:%s", os.Getenv("USU_GRPC_HOST"), os.Getenv("USU_GRPC_PORT"))
+
+	conn, err = grpc.Dial(portGrpcUsuarios, grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("Não foi possível conectar: %s", err)
+		level.Error(logger).Log("Não foi possível conectar: %s", err)
 		p.Usu = usuarios.Usuario{
 			Err: "Erro inesperado na comunicaçao com o serviço de usuário",
 		}
@@ -45,7 +54,7 @@ func (s service) Get(ctx context.Context, id int64) (Pedido, error) {
 	c := proto_usu.NewServiceGetUserClient(conn)
 
 	req := proto_usu.GetUserRequest{
-		Id: int64(p.Usu.ID),
+		Id: int64(p.Idusuarios),
 	}
 
 	response, err := c.GetUser(context.Background(), &req)

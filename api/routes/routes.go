@@ -19,8 +19,9 @@ type Route struct {
 func Load() []Route {
 	var allRoutes []Route
 
-	allRoutes = append(allRoutes, homeRoutes...)   // rotas de home
-	allRoutes = append(allRoutes, pedidoRoutes...) // rotas de pedido
+	allRoutes = append(allRoutes, homeRoutes...)    // rotas de home
+	allRoutes = append(allRoutes, pedidoRoutes...)  // rotas de pedido
+	allRoutes = append(allRoutes, usuarioRoutes...) // rotas de usuarios
 
 	fmt.Println(allRoutes)
 

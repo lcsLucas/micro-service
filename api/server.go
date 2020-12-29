@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/lcslucas/micro-service/api/routes/router"
+	"github.com/lcslucas/micro-service/api/router"
 )
 
 func Run(addr string) {
@@ -25,20 +25,4 @@ func Run(addr string) {
 	fmt.Printf("Servidor escutando em: %s\n", addr)
 	log.Fatal(srv.ListenAndServe())
 
-	/*
-		r := mux.NewRouter()
-		r.HandleFunc("/", middleware.SetMiddlewareJSON(handlers.HomeHandler)).Methods("Get")
-		r.HandleFunc("/pedido/{id}", middleware.SetMiddlewareJSON(handlers.PedidoHandler)).Methods("Get")
-
-		srv := &http.Server{
-			Handler: r,
-			Addr:    addr,
-			// Good practice: enforce timeouts for servers you create!
-			WriteTimeout: 15 * time.Second,
-			ReadTimeout:  15 * time.Second,
-		}
-
-		fmt.Printf("Servidor rodando em: %s\n", addr)
-		log.Fatal(srv.ListenAndServe())
-	*/
 }

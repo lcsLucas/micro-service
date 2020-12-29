@@ -14,6 +14,8 @@ var DBURL string
 func Connect(c config.ConfigDB) (*gorm.DB, error) {
 	DBURL = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", c.User, c.Password, c.Host, c.Port, c.DBName)
 
+	fmt.Println(DBURL)
+
 	db, err := gorm.Open(mysql.Open(DBURL), &gorm.Config{})
 	if err != nil {
 		return nil, err
