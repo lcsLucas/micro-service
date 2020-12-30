@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"testing"
 
 	proto "github.com/lcslucas/micro-service/proto/usuarios"
@@ -14,7 +13,7 @@ func TestService(t *testing.T) {
 	var conn *grpc.ClientConn
 	conn, err := grpc.Dial(":8081", grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("Não foi possível conectar: %s", err)
+		t.Fatalf("Não foi possível conectar: %s", err)
 	}
 
 	defer conn.Close()
@@ -22,7 +21,7 @@ func TestService(t *testing.T) {
 	c := proto.NewServiceGetUserClient(conn)
 
 	req := proto.GetUserRequest{
-		Id: 1,
+		Id: 2,
 	}
 
 	response, err := c.GetUser(context.Background(), &req)

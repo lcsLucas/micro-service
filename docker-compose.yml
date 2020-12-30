@@ -1,5 +1,7 @@
 # docker-compose up -> cria os container e dá o start neles
 # docker-compose down --rmi 'all' -> para todos os containers que estão em execução e remove eles e suas imagens
+# docker-compose stop usuarios -> parar um serviço 
+# docker-compose up --force-recreate --no-deps --build usuarios -> rebuild do serviço e subi-lo novamente, separados dos outros
 
 version: '3.3'
 services:
@@ -21,8 +23,24 @@ services:
       # <Port exposed> : < MySQL Port running inside container>
       - '3306:3306'
     volumes:
-      - ./mysqldata:/var/lib/mysql
+      - ./data/mysql:/var/lib/mysql
       - ./sql:/docker-entrypoint-initdb.d
+  mongo:
+    image: mongo:latest
+    container_name: micro-mongo
+    restart: always
+    command: [--auth]
+    networks: 
+      - net-micro
+    environment: 
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: root-db
+    ports: 
+      - 27017:27017
+    volumes: 
+      - ./data/mongodb:/data/db
+      - ./docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
   api:
     stdin_open: true
     tty: true
@@ -52,12 +70,12 @@ services:
     working_dir: /go/src/github.com/lcslucas/micro-service/cmd/usuarios
     command: go run main.go
     depends_on:
-      - db
+      - mongo
       - api
     ports:
       - '8081:8081'
     links:
-      - db
+      - mongo
       - api
     networks: 
       - net-micro

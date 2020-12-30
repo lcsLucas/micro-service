@@ -1,23 +1,34 @@
 package migrations
 
 import (
-	"log"
+	"context"
 
 	"github.com/lcslucas/micro-service/usuarios"
-	"gorm.io/gorm"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func ExecMigrationUsuarios(db *gorm.DB) error {
+func ExecMigrationUsuarios(clientMongo *mongo.Client) error {
 	var err error
 
-	check := db.Migrator().HasTable(usuarios.Usuario{})
-	if !check {
-		err = db.Debug().Migrator().AutoMigrate(usuarios.Usuario{})
-		if err != nil {
-			return err
-		} else {
-			log.Println(`Tabela de "usuarios" gerada com sucesso.`)
-		}
+	db := clientMongo.Database("pedidos")
+
+	users := []interface{}{
+		usuarios.Usuario{
+			ID:    1,
+			Nome:  "Lucas S. Rosa",
+			Email: "lucas.tarta@hotmail.com",
+		},
+		usuarios.Usuario{
+			ID:    2,
+			Nome:  "Maria da Silva",
+			Email: "mariadasilva@email.com",
+		},
+	}
+
+	collection := db.Collection("usuarios")
+	_, err = collection.InsertMany(context.TODO(), users)
+	if err != nil {
+		return err
 	}
 
 	return nil

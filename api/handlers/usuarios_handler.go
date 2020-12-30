@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -51,6 +52,7 @@ func UsuarioTestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprint(w, response)
+	r_json, _ := json.Marshal(response.Usuario)
+	fmt.Fprint(w, string(r_json))
 
 }

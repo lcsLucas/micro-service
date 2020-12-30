@@ -15,15 +15,15 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 	"github.com/lcslucas/micro-service/config"
-	database "github.com/lcslucas/micro-service/database/mongodb"
+	database "github.com/lcslucas/micro-service/database/mysql"
 	"github.com/lcslucas/micro-service/migrations"
 	proto "github.com/lcslucas/micro-service/proto/usuarios"
 	"github.com/lcslucas/micro-service/usuarios"
-	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
+	"gorm.io/gorm"
 )
 
-var conn *mongo.Client
+var conn *gorm.DB
 var configDB config.ConfigDB
 
 var logger log.Logger
@@ -39,6 +39,9 @@ func (s *ServerGRPC) GetUser(ctx context.Context, req *proto.GetUserRequest) (*p
 		repository := usuarios.NewRepository(conn, logger)
 		srv = usuarios.NewService(repository, logger)
 	}
+
+	fmt.Println("--- Content request ---")
+	fmt.Println(req)
 
 	u, err := srv.Get(ctx, int(req.Id))
 	if err != nil {
@@ -61,18 +64,6 @@ func (s *ServerGRPC) GetUser(ctx context.Context, req *proto.GetUserRequest) (*p
 }
 
 func inicializeDB() error {
-	newConn, err := database.Connect(context.Background(), configDB)
-	if err != nil {
-		fmt.Println("*** Teste de percurso: cmd/usuarios.go:66 ***")
-		return err
-	}
-
-	conn = newConn
-	return migrations.ExecMigrationUsuarios(conn)
-}
-
-/*
-func inicializeDB() error {
 	newConn, err := database.Connect(configDB)
 	if err != nil {
 		return err
@@ -82,7 +73,6 @@ func inicializeDB() error {
 
 	return migrations.ExecMigrationUsuarios(conn)
 }
-*/
 
 func inicializeLogger() {
 	logger = log.NewLogfmtLogger(os.Stderr)
@@ -102,7 +92,6 @@ func inicializeVars() error {
 	}
 
 	configDB = config.ConfigDB{
-		Driver:   os.Getenv("USU_DB_DRIVER"),
 		Host:     os.Getenv("USU_DB_HOST"),
 		User:     os.Getenv("USU_DB_USER"),
 		Password: os.Getenv("USU_DB_PASSWORD"),
@@ -140,7 +129,9 @@ func main() {
 	if err != nil {
 		level.Error(logger).Log("exit", err)
 	}
-	defer conn.Disconnect(context.Background())
+
+	sqlDB, _ := conn.DB()
+	defer sqlDB.Close()
 	/*Iniciando conexão com o banco*/
 
 	/*Iniciando conexão GRPC com o serviço de usuário*/

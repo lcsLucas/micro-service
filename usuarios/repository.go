@@ -2,24 +2,62 @@ package usuarios
 
 import (
 	"context"
-	"errors"
+	"fmt"
 
 	"github.com/go-kit/kit/log"
-	"gorm.io/gorm"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type repository struct {
-	db     *gorm.DB
-	logger log.Logger
+	clientMongo *mongo.Client
+	logger      log.Logger
 }
 
-func NewRepository(db *gorm.DB, logger log.Logger) Repository {
+func NewRepository(client *mongo.Client, logger log.Logger) Repository {
 	return &repository{
-		db:     db,
-		logger: log.With(logger, "repository", "sql"),
+		clientMongo: client,
+		logger:      log.With(logger, "repository", "sql"),
 	}
 }
 
+func (r *repository) Get(ctx context.Context, id int) (Usuario, error) {
+	db := r.clientMongo.Database("pedidos")
+	collection := db.Collection("usuarios")
+
+	filter := bson.M{"id": id}
+
+	u := Usuario{}
+
+	err := collection.FindOne(ctx, filter).Decode(&u)
+	if err != nil {
+		return Usuario{}, err
+	}
+
+	fmt.Println(u)
+
+	/*
+		cur, err := collection.Find(ctx, bson.D{})
+		if err != nil {
+			return Usuario{}, err
+		}
+		defer cur.Close(ctx)
+
+		for cur.Next(ctx) {
+			u := Usuario{}
+			err = cur.Decode(&u)
+			if err != nil {
+				return Usuario{}, err
+			}
+
+			fmt.Println(u)
+		}
+	*/
+
+	return u, nil
+}
+
+/*
 func (r *repository) Get(ctx context.Context, id int) (Usuario, error) {
 	u := Usuario{}
 	err := r.db.Debug().WithContext(ctx).Model(Usuario{}).Where("id=?", id).Take(&u).Error
@@ -33,5 +71,5 @@ func (r *repository) Get(ctx context.Context, id int) (Usuario, error) {
 	}
 
 	return u, nil
-
 }
+*/

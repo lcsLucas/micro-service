@@ -1,4 +1,4 @@
-package database
+package mysql
 
 import (
 	"fmt"
@@ -21,5 +21,6 @@ func Connect(c config.ConfigDB) (*gorm.DB, error) {
 		return nil, err
 	}
 
+	fmt.Printf("Database connected:", DBURL)
 	return db, nil
 }
