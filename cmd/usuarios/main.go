@@ -60,8 +60,8 @@ func (s *ServerGRPC) GetUser(ctx context.Context, req *proto.GetUserRequest) (*p
 	}, nil
 }
 
-func inicializeDB() error {
-	newConn, err := database.Connect(context.Background(), configDB)
+func inicializeDB(ctx context.Context) error {
+	newConn, err := database.Connect(ctx, configDB)
 	if err != nil {
 		fmt.Println("*** Teste de percurso: cmd/usuarios.go:66 ***")
 		return err
@@ -119,6 +119,8 @@ func inicializeVars() error {
 func main() {
 	var err error
 
+	ctx := context.Background()
+
 	/* Iniciando Logger */
 	inicializeLogger()
 
@@ -136,11 +138,11 @@ func main() {
 	/* Inicializando variáveis */
 
 	/* Iniciando conexão com o banco*/
-	err = inicializeDB()
+	err = inicializeDB(ctx)
 	if err != nil {
 		level.Error(logger).Log("exit", err)
 	}
-	defer conn.Disconnect(context.Background())
+	defer conn.Disconnect(ctx)
 	/*Iniciando conexão com o banco*/
 
 	/*Iniciando conexão GRPC com o serviço de usuário*/

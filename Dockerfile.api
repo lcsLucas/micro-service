@@ -1,6 +1,6 @@
 # Instruções de como criar a imagem e o container
 # docker build -t micro_api -f Dockerfile.api .
-# docker container run -i --name micro-api --net net-micro -p 9000:9000 micro_api go run main.go
+# docker container run -i --name micro-api --net net-micro -p 9000:9000 micro_api
 FROM golang:1.15
 
 ADD /api /go/src/github.com/lcslucas/micro-service/api
@@ -24,9 +24,11 @@ WORKDIR /go/src/github.com/lcslucas/micro-service
 #RUN go get github.com/lcslucas/micro-service
 
 RUN export GO111MODULE=on
+RUN go install
 #RUN cd /go/src/github.com/lcslucas/micro-service
 
 # expõe a porta 9000
 EXPOSE 9000
 
-#ENTRYPOINT [ "go run main" ]
+#CMD go run main
+ENTRYPOINT ["/go/bin/micro-service"]

@@ -1,10 +1,10 @@
 # Instruções de como criar a imagem e o container
 # docker build -t micro_usuarios -f Dockerfile.usuarios .
-# docker container run -i --name micro-usuarios --net net-micro -p 8081:8081 micro_usuarios go run main.go
+# docker container run -i --name micro-usuarios --net net-micro -p 8081:8081 micro_usuarios
 FROM golang:1.15
 
 # Cópia das pastas necessárias do sistema para a imagem
-ADD /cmd/usuarios /go/src/github.com/lcslucas/micro-service/cmd/usuarios
+ADD /cmd/usuarios /go/src/github.com/lcslucas/micro-service
 ADD /config /go/src/github.com/lcslucas/micro-service/config
 ADD /database /go/src/github.com/lcslucas/micro-service/database
 ADD /migrations/usuarios.go /go/src/github.com/lcslucas/micro-service/migrations/usuarios.go
@@ -14,11 +14,16 @@ ADD /utils /go/src/github.com/lcslucas/micro-service/utils
 ADD /go.mod /go/src/github.com/lcslucas/micro-service
 ADD /.env /go/src/github.com/lcslucas/micro-service
 
+WORKDIR /go/src/github.com/lcslucas/micro-service
+
 # Diretório de trabalho
 #WORKDIR /go/src/github.com/lcslucas/micro-service/cmd/usuarios
 
 RUN export GO111MODULE=on
+RUN go install
 
 EXPOSE 8081
 
+ENTRYPOINT ["/go/bin/micro-service"]
 #ENTRYPOINT [ "go run main" ]
+#ENTRYPOINT ["/go/bin/micro-service"]

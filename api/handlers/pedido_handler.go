@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -16,6 +15,8 @@ import (
 )
 
 func PedidoHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatalf("Erro: não foi possível ler o .ENV -> %v", err)
@@ -51,7 +52,7 @@ func PedidoHandler(w http.ResponseWriter, r *http.Request) {
 		Id: param_id,
 	}
 
-	response, err := c.GetProduto(context.Background(), &req)
+	response, err := c.GetProduto(ctx, &req)
 
 	if err != nil {
 		fmt.Printf("Não foi possível chamar o método GetProduto: %s", err)

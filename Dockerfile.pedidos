@@ -1,10 +1,10 @@
 # Instruções de como criar a imagem e o container
 # docker build -t micro_pedidos -f Dockerfile.pedidos .
-# docker container run -i --name micro-pedidos --net net-micro -p 8081:8081 micro_pedidos go run main.go
+# docker container run -i --name micro-pedidos --net net-micro -p 8082:8082 micro_pedidos
 FROM golang:1.15
 
 # Cópia das pastas necessárias do sistema para a imagem
-ADD /cmd/pedidos /go/src/github.com/lcslucas/micro-service/cmd/pedidos
+ADD /cmd/pedidos /go/src/github.com/lcslucas/micro-service
 ADD /config /go/src/github.com/lcslucas/micro-service/config
 ADD /database /go/src/github.com/lcslucas/micro-service/database
 ADD /migrations/pedidos.go /go/src/github.com/lcslucas/micro-service/migrations/pedidos.go
@@ -15,11 +15,15 @@ ADD /utils /go/src/github.com/lcslucas/micro-service/utils
 ADD /go.mod /go/src/github.com/lcslucas/micro-service
 ADD /.env /go/src/github.com/lcslucas/micro-service
 
+WORKDIR /go/src/github.com/lcslucas/micro-service
+
 # Diretório de trabalho
 #WORKDIR /go/src/github.com/lcslucas/micro-service/cmd/pedidos
 
 RUN export GO111MODULE=on
+RUN go install
 
 EXPOSE 8082
 
+ENTRYPOINT ["/go/bin/micro-service"]
 #ENTRYPOINT [ "go run main" ]

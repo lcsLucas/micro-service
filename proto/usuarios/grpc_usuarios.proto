@@ -2,7 +2,8 @@ syntax = "proto3";
 
 package proto;
 
-// comando para generar o código em GO: protoc --go_out=plugins=grpc:. proto/usuarios/grpc_usuarios.proto
+// comando para generar o código em GO: 
+// protoc --go_opt=paths=source_relative --go_out=plugins=grpc:. proto/usuarios/grpc_usuarios.proto
 
 service ServiceGetUser {
     rpc GetUser (GetUserRequest) returns (GetUserResponse) {}

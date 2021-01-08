@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -14,6 +13,8 @@ import (
 )
 
 func UsuarioTestHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatalf("Erro: não foi possível ler o .ENV -> %v", err)
@@ -22,10 +23,10 @@ func UsuarioTestHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	portGrpcPedidos := fmt.Sprintf("%s:%s", os.Getenv("USU_GRPC_HOST"), os.Getenv("USU_GRPC_PORT"))
+	portGrpcUsuarios := fmt.Sprintf("%s:%s", os.Getenv("USU_GRPC_HOST"), os.Getenv("USU_GRPC_PORT"))
 
 	var conn *grpc.ClientConn
-	conn, err = grpc.Dial(portGrpcPedidos, grpc.WithInsecure())
+	conn, err = grpc.Dial(portGrpcUsuarios, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Não foi possível conectar: %s", err)
 		w.WriteHeader(http.StatusUnprocessableEntity)
@@ -40,7 +41,7 @@ func UsuarioTestHandler(w http.ResponseWriter, r *http.Request) {
 		Id: 1,
 	}
 
-	response, err := c.GetUser(context.Background(), &req)
+	response, err := c.GetUser(ctx, &req)
 	if err != nil {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		fmt.Fprintf(w, "Não foi possível chamar o método GetUser: %s", err)
